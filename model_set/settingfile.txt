@@ -1,0 +1,6 @@
+3
+./sample/i_csc_heisen_3site_b.txt
+./model_set/j_set.txt
+./output/r_csc_heisen_3site_b.txt
+y
+5
