@@ -2,9 +2,9 @@
 
 using namespace std;
 
-void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
-                    double *mat_val, double *eigen_value, double *eigen_vec,
-                    std::string S_L_Outpufile_name)  // S_L = Sparse_Lanczos
+void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
+                        double *mat_val, double *eigen_value, double *eigen_vec,
+                        std::string S_L_Outpufile_name)  // S_L = Sparse_Lanczos
 {
     std::cout
         << "/******************************************************************"
@@ -25,7 +25,7 @@ void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
     bool err_checker = true;
 
     // setting Initial vector & standabilization
-    double **u = new double *[mat_dim];
+    double **u = new double *[mat_dim];  // delete checked
     for (int i = 0; i < mat_dim; i++)
     {
         u[i] = new double[mat_dim];
@@ -39,43 +39,45 @@ void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
     sdz(mat_dim, err, u[0]);
 
     // setting varaiables
-    double *v = new double[mat_dim];
+    double *v = new double[mat_dim];  // delete checked
     // diagonal elements of tridiagonal matrix
-    double *alpha = new double[mat_dim];
+    double *alpha = new double[mat_dim];  // delete checked
     vec_init(mat_dim, alpha);
     // sub diagonal elements of tridiagonal matrix
-    double *beta = new double[mat_dim - 1];
+    double *beta = new double[mat_dim - 1];  // delete checked
     vec_init(mat_dim - 1, beta);
 
     /*arrays of eigen value*/
-    double *eigen_value_even = new double[mat_dim];
-    double *eigen_value_odd = new double[mat_dim];
+    double *eigen_value_even = new double[mat_dim];  // delete checked
+    double *eigen_value_odd = new double[mat_dim];   // delete checked
     vec_init(mat_dim, eigen_value_even);
     vec_init(mat_dim, eigen_value_odd);
 
     /*diag = alpha , sub_diag = beta*/
-    double *diag = new double[mat_dim];
-    double *sub_diag = new double[mat_dim - 1];
-    double *tri_diag_eigen_vec = new double[mat_dim * mat_dim];
+    int mat_dim2 = mat_dim * mat_dim;
+    double *diag = new double[mat_dim];                 // delete checked
+    double *sub_diag = new double[mat_dim - 1];         // delete checked
+    double *tri_diag_eigen_vec = new double[mat_dim2];  // delete checked
     vec_init(mat_dim, diag);
     vec_init(mat_dim - 1, sub_diag);
-    vec_init(mat_dim * mat_dim, tri_diag_eigen_vec);
+    vec_init(mat_dim2, tri_diag_eigen_vec);
 
     for (int k = 0; k < mat_dim; k++)
     {
+        if (k > 0) count++;
         vec_init(mat_dim, v);
         if (err_checker)
         {
             if (k == mat_dim - 1)
             {
                 // calculate v = Au0(k)
-                sparse_dgemv(mat_dim, mat_elements, v, row, col, mat_val, u[k]);
+                CSC_sparse_dgemv(mat_dim, nnz, v, row, col_ptr, mat_val, u[k]);
                 // calculate alpha
                 alpha[k] = cblas_ddot(mat_dim, v, 1, u[k], 1);
             }
             else
             {  // calculate v[i] = Au0(k)
-                sparse_dgemv(mat_dim, mat_elements, v, row, col, mat_val, u[k]);
+                CSC_sparse_dgemv(mat_dim, nnz, v, row, col_ptr, mat_val, u[k]);
                 if (k == 0)
                 {
                     alpha[k] = cblas_ddot(mat_dim, v, 1, u[k], 1);
@@ -146,7 +148,6 @@ void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
         }
         else
         {
-            count = k;
             break;
         }
     }
@@ -162,20 +163,22 @@ void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
     /*Calculate ground state of eigen vector*/
     if (count == mat_dim - 1)
     {
-        // ground_eigenvec(mat_dim, count - 2, err, eigen_value[0], alpha, beta,
-        // u, eigen_vec);
-        ground_state_eigenvec(mat_dim, count, eigen_value[0],
-                              tri_diag_eigen_vec, u, eigen_vec, err);
+        // ground_eigenvec(mat_dim, count - 2, err, eigen_value[0], alpha,
+        beta,
+            // u, eigen_vec);
+            ground_state_eigenvec(mat_dim, count, eigen_value[0],
+                                  tri_diag_eigen_vec, u, eigen_vec, err);
     }
     else
     {
-        // ground_eigenvec(mat_dim, count, err, eigen_value[0], alpha, beta, u,
-        // eigen_vec);
-        ground_state_eigenvec(mat_dim, count, eigen_value[0],
-                              tri_diag_eigen_vec, u, eigen_vec, err);
+        // ground_eigenvec(mat_dim, count, err, eigen_value[0], alpha, beta,
+        u,
+            // eigen_vec);
+            ground_state_eigenvec(mat_dim, count, eigen_value[0],
+                                  tri_diag_eigen_vec, u, eigen_vec, err);
     }
 
-    /**OUTPUT TO FILE**/
+    // /**OUTPUT TO FILE**/
     of_S_L_Outputfile << "1. EIGEN VALUES" << endl;
     fprintvec(of_S_L_Outputfile, mat_dim, 5, eigen_value);
     of_S_L_Outputfile << endl;
@@ -194,7 +197,7 @@ void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
     delete[] beta;
     delete[] eigen_value_even;
     delete[] eigen_value_odd;
+    delete[] tri_diag_eigen_vec;
     delete[] diag;
     delete[] sub_diag;
-    delete[] tri_diag_eigen_vec;
 }

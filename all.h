@@ -37,13 +37,13 @@ void CSC_sparse_make_hamiltonian(int mat_dim, int tot_site_num,
                                  int &nnz);
 
 /*SPARSE LANCZOS*/
-void sparse_lanczos(int mat_dim, int mat_elements, int *row, int *col,
-                    double *mat_val, double *eigen_value, double *eigen_vec,
-                    std::string S_L_Outpufile_name);
+void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
+                        double *mat_val, double *eigen_value, double *eigen_vec,
+                        std::string S_L_Outpufile_name);
 void sdz(int mat_dim, double err, double *vec);
 void gso(int n, int k, double **u);
-void sparse_dgemv(int mat_dim, int mat_elements, double *v, int *row, int *col,
-                  double *mat_val, double *u);
+void CSC_sparse_dgemv(int mat_dim, int nnz, double *v, int *row, int *col_ptr,
+                      double *mat_val, double *u);
 void ground_state_eigenvec(int mat_dim, int count,
                            double groundstate_eigen_value,
                            double *tri_diag_eigen_vec, double **u,

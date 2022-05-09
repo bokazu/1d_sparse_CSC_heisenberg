@@ -87,16 +87,16 @@ int main()
         mat_dim, tot_site_num, M_H_JsetFile_name, Boundary_Condition, J);
     cout << "Number of non zero elements = " << nnz << endl;
     /*Hamiltonian with COO format*/
-    int *row = new int[nnz];
-    int *col_ptr = new int[mat_dim + 1];
-    double *mat_val = new double[nnz];
+    int *row = new int[nnz];              // delete checked
+    int *col_ptr = new int[mat_dim + 1];  // delete checked
+    double *mat_val = new double[nnz];    // delete checked
     vec_init(nnz, row);
     vec_init(nnz, col_ptr);
     vec_init(nnz, mat_val);
 
     /*Arrays of eigen value and vector*/
-    double *eigen_value = new double[mat_dim];
-    double *eigen_vec = new double[mat_dim];
+    double *eigen_value = new double[mat_dim];  // delete chcecked
+    double *eigen_vec = new double[mat_dim];    // delete checked
     vec_init(mat_dim, eigen_value);
     vec_init(mat_dim, eigen_vec);
 
@@ -132,9 +132,8 @@ int main()
         }
     }
 
-    // sparse_lanczos(mat_dim, nnz, row, col_ptr, mat_val, eigen_value,
-    // eigen_vec,
-    //                S_L_OutputFile_name);
+    CSC_sparse_lanczos(mat_dim, nnz, row, col_ptr, mat_val, eigen_value,
+                       eigen_vec, S_L_OutputFile_name);
 
     delete[] row;
     delete[] col_ptr;
