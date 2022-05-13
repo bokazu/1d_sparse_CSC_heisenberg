@@ -29,7 +29,7 @@ void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
     {
         u[i] = new double[mat_dim];
     }
-
+    srand(time(NULL));
     for (int i = 0; i < mat_dim; i++)
     {
         u[0][i] = (double)rand() / RAND_MAX;
@@ -126,12 +126,16 @@ void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
                     LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', mat_dim, diag,
                                   sub_diag, tri_diag_eigen_vec, mat_dim);
                     cblas_dcopy(mat_dim, diag, 1, eigen_value_even, 1);
+                    cout << "eigen vector of ground state at k = " << k << endl;
+                    printvec(mat_dim, 5, tri_diag_eigen_vec);
                 }
                 else
                 {
-                    LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', k + 2, diag, sub_diag,
+                    LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', k + 1, diag, sub_diag,
                                   tri_diag_eigen_vec, k + 2);
                     cblas_dcopy(mat_dim, diag, 1, eigen_value_even, 1);
+                    cout << "eigen vector of ground state at k = " << k << endl;
+                    printvec(k + 1, 5, tri_diag_eigen_vec);
                 }
             }
             else
@@ -141,12 +145,16 @@ void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
                     LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', mat_dim, diag,
                                   sub_diag, tri_diag_eigen_vec, mat_dim);
                     cblas_dcopy(mat_dim, diag, 1, eigen_value_odd, 1);
+                    cout << "eigen vector of ground state at k = " << k << endl;
+                    printvec(mat_dim, 5, tri_diag_eigen_vec);
                 }
                 else
                 {
-                    LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', k + 2, diag, sub_diag,
+                    LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', k + 1, diag, sub_diag,
                                   tri_diag_eigen_vec, k + 2);
                     cblas_dcopy(mat_dim, diag, 1, eigen_value_odd, 1);
+                    cout << "eigen vector of groundstate at k = " << k << endl;
+                    printvec(k + 1, 5, tri_diag_eigen_vec);
                 }
             }
             if (k > 0)
@@ -194,7 +202,7 @@ void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
     delete[] beta;
     delete[] eigen_value_even;
     delete[] eigen_value_odd;
-    // delete[] tri_diag_eigen_vec;
+    delete[] tri_diag_eigen_vec;
     delete[] diag;
     delete[] sub_diag;
 }

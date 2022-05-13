@@ -20,7 +20,6 @@ void CSC_sparse_make_hamiltonian(int mat_dim, int tot_site_num,
         for (int j = 0; j < mat_dim; j++)
         {
             szz = 0.;
-            cout << "col_ptr_val = " << col_ptr_val << endl;
             col_ptr[col_ptr_index] = col_ptr_val;
             col_ptr_index++;
 

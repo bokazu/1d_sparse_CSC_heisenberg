@@ -91,7 +91,7 @@ int main()
     int *col_ptr = new int[mat_dim + 1];  // delete checked
     double *mat_val = new double[nnz];    // delete checked
     vec_init(nnz, row);
-    vec_init(nnz, col_ptr);
+    vec_init(mat_dim + 1, col_ptr);
     vec_init(nnz, mat_val);
 
     /*Arrays of eigen value and vector*/
