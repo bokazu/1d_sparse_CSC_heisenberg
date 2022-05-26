@@ -4,7 +4,8 @@ using namespace std;
 
 int main()
 {
-    cout << "START 1D Heisenberg Model Calculation(Sparse)\n\n";
+    cout << "START 1D Heisenberg Model Calculation(Sparse Matrix : CSC "
+            "FORMTAT)\n\n";
 
     /*Calculate Hamiltonian Matrix's Components*/
     /*INPUT MODEL DATA*/
@@ -19,8 +20,8 @@ int main()
     string M_H_OutputFile_name, M_H_JsetFile_name, Boundary_Condition,
         S_L_OutputFile_name;
 
-    int tot_site_num, precision;
-    get_data(if_M_H_Settingfile, tot_site_num, M_H_OutputFile_name,
+    int tot_site_num, precision, tri_mat_dim;
+    get_data(if_M_H_Settingfile, tot_site_num, tri_mat_dim, M_H_OutputFile_name,
              M_H_JsetFile_name, S_L_OutputFile_name, Boundary_Condition,
              precision);
 
@@ -29,19 +30,21 @@ int main()
               << "INPUT DATA"
               << "*************************************************************"
                  "**************************/\n";
-    std::cout << "tot_site_num        = " << tot_site_num << endl;
-    std::cout << "M_H_OutputFile_name = " << M_H_OutputFile_name << endl;
-    std::cout << "M_H_JsetFile_name   = " << M_H_JsetFile_name << endl;
-    std::cout << "D_L_OutputFile_name = " << S_L_OutputFile_name << endl;
-    std::cout << "Boundary Condition  = " << Boundary_Condition << endl;
-    std::cout << "precision           = " << precision << endl;
+    std::cout << "tot_site_num              = " << tot_site_num << endl;
+    std::cout << "tri_diag_matrix_dimension = " << tri_mat_dim << endl;
+    std::cout << "M_H_OutputFile_name       = " << M_H_OutputFile_name << endl;
+    std::cout << "D_L_OutputFile_name       = " << S_L_OutputFile_name << endl;
+    std::cout << "M_H_JsetFile_name         = " << M_H_JsetFile_name << endl;
+    std::cout << "Boundary Condition        = " << Boundary_Condition << endl;
+    std::cout << "precision                 = " << precision << endl;
     std::cout << "/************************************************************"
                  "***************************"
               << "*************************************************************"
                  "************************************************/\n";
 
     /*******************************************************************************************************************************/
-    int mat_dim = 1 << tot_site_num;
+    const int mat_dim = 1 << tot_site_num;
+    cout << "mat_dim = " << mat_dim << endl;
 
     /*************************Setting
      * J***************************************************************************/
@@ -95,45 +98,46 @@ int main()
     vec_init(nnz, mat_val);
 
     /*Arrays of eigen value and vector*/
-    double *eigen_value = new double[mat_dim];  // delete chcecked
-    double *eigen_vec = new double[mat_dim];    // delete checked
-    vec_init(mat_dim, eigen_value);
+    double *eigen_value = new double[tri_mat_dim];  // delete chcecked
+    double *eigen_vec = new double[mat_dim];        // delete checked
+    vec_init(tri_mat_dim, eigen_value);
     vec_init(mat_dim, eigen_vec);
 
     CSC_sparse_make_hamiltonian(mat_dim, tot_site_num, M_H_OutputFile_name,
                                 precision, Boundary_Condition, J, row, col_ptr,
                                 mat_val, nnz);
 
-    cout << "/********************************MATRIX INFO WITH CSC "
-            "FORMAT************************************************/"
-         << endl;
-    cout << setw(6) << scientific << setprecision(precision) << left << "row"
-         << "  " << setw(6) << scientific << setprecision(precision) << left
-         << "col"
-         << "  " << setw(6) << scientific << setprecision(precision) << left
-         << "mat_val" << endl;
-    for (int i = 0; i < nnz; i++)
-    {
-        if (i < mat_dim + 1)
-        {
-            cout << setw(6) << scientific << setprecision(precision) << left
-                 << row[i] << "  " << setw(6) << scientific
-                 << setprecision(precision) << left << col_ptr[i] << "  "
-                 << setw(6) << scientific << setprecision(precision) << left
-                 << mat_val[i] << endl;
-        }
-        else
-        {
-            cout << setw(6) << scientific << setprecision(precision) << left
-                 << row[i] << "  " << setw(6) << scientific
-                 << setprecision(precision) << left << "  " << setw(6)
-                 << scientific << setprecision(precision) << left << mat_val[i]
-                 << endl;
-        }
-    }
+    // cout << "/********************************MATRIX INFO WITH CSC "
+    //         "FORMAT************************************************/"
+    //      << endl;
+    // cout << setw(6) << scientific << setprecision(precision) << left << "row"
+    //      << "  " << setw(6) << scientific << setprecision(precision) << left
+    //      << "col"
+    //      << "  " << setw(6) << scientific << setprecision(precision) << left
+    //      << "mat_val" << endl;
+    // for (int i = 0; i < nnz; i++)
+    // {
+    //     if (i < mat_dim + 1)
+    //     {
+    //         cout << setw(6) << scientific << setprecision(precision) << left
+    //              << row[i] << "  " << setw(6) << scientific
+    //              << setprecision(precision) << left << col_ptr[i] << "  "
+    //              << setw(6) << scientific << setprecision(precision) << left
+    //              << mat_val[i] << endl;
+    //     }
+    //     else
+    //     {
+    //         cout << setw(6) << scientific << setprecision(precision) << left
+    //              << row[i] << "  " << setw(6) << scientific
+    //              << setprecision(precision) << left << "  " << setw(6)
+    //              << scientific << setprecision(precision) << left <<
+    //              mat_val[i]
+    //              << endl;
+    //     }
+    // }
 
-    CSC_sparse_lanczos(mat_dim, nnz, row, col_ptr, mat_val, eigen_value,
-                       eigen_vec, S_L_OutputFile_name);
+    CSC_sparse_lanczos(mat_dim, nnz, tri_mat_dim, row, col_ptr, mat_val,
+                       eigen_value, eigen_vec, S_L_OutputFile_name);
 
     delete[] row;
     delete[] col_ptr;

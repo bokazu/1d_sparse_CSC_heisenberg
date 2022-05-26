@@ -15,10 +15,10 @@
 int CSC_sparse_count_mat_elements(int mat_dim, int tot_site_num,
                                   std::string M_H_JsetFile_name,
                                   std::string Boundary_Condition, double *J);
-void get_data(std::ifstream &M_H_Settingfile, int &tot_site_num,
-              std::string &M_H_OutputFile_name, std::string &M_H_JsetFile_name,
-              std::string &D_L_OutputFile_name, std::string &Boundary_Condition,
-              int &precision);
+void get_data(std::ifstream &if_M_H_Settingfile, int &tot_site_num,
+              int &tri_mat_dim, std::string &M_H_OutputFile_name,
+              std::string &M_H_JsetFile_name, std::string &D_L_OutputFile_name,
+              std::string &Boundary_Condition, int &precision);
 /*for the purpose to count matrix's non zero elements*/
 void spm(int j, int site_num, int tot_site_num, int &mat_nonzero_elements);
 void smp(int j, int site_num, int tot_site_num, int &mat_nonzero_elements);
@@ -37,9 +37,9 @@ void CSC_sparse_make_hamiltonian(int mat_dim, int tot_site_num,
                                  int &nnz);
 
 /*SPARSE LANCZOS*/
-void CSC_sparse_lanczos(int mat_dim, int nnz, int *row, int *col_ptr,
-                        double *mat_val, double *eigen_value, double *eigen_vec,
-                        std::string S_L_Outpufile_name);
+void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
+                        int *col_ptr, double *mat_val, double *eigen_value,
+                        double *eigen_vec, std::string S_L_Outpufile_name);
 void sdz(int mat_dim, double err, double *vec);
 void gso(int n, int k, double **u);
 void CSC_sparse_dgemv(int mat_dim, int nnz, double *v, int *row, int *col_ptr,
