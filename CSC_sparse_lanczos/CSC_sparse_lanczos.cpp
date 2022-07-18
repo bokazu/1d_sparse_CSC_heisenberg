@@ -76,6 +76,8 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                 if (err_checker)
                 {
                     count = k;
+                    /************************************EVEN STEP
+                     * START**********************************/
                     if (k % 2 == 0)
                     {
                         if (k == mat_dim - 1)
@@ -84,6 +86,17 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                             CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                              mat_val, u[0]);
                             alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
+
+                            // calculate eigenvalue
+                            vec_init(tri_mat_dim, diag);
+                            vec_init(tri_mat_dim, sub_diag);
+                            cblas_dcopy(tri_mat_dim, alpha, 1, diag, 1);
+                            cblas_dcopy(tri_mat_dim, beta, 1, sub_diag, 1);
+
+                            LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', mat_dim, diag,
+                                          sub_diag, tri_diag_eigen_vec,
+                                          mat_dim);
+                            cblas_dcopy(mat_dim, diag, 1, eigen_value_even, 1);
                         }
                         else
                         {
@@ -101,6 +114,23 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                                 cblas_dscal(mat_dim, 1. / beta[k], u[1], 1);
                                 of_S_L_Outputfile << "u[1] = " << endl;
                                 fprintvec(of_S_L_Outputfile, mat_dim, 5, u[1]);
+
+                                // calculate eigenvalue
+                                vec_init(tri_mat_dim, diag);
+                                vec_init(tri_mat_dim, sub_diag);
+                                cblas_dcopy(tri_mat_dim, alpha, 1, diag, 1);
+                                cblas_dcopy(tri_mat_dim, beta, 1, sub_diag, 1);
+                                int info = LAPACKE_dstev(
+                                    LAPACK_COL_MAJOR, 'V', k + 2, diag,
+                                    sub_diag, tri_diag_eigen_vec, k + 2);
+                                if (info != 0)
+                                {
+                                    std::cout << "At k = " << k
+                                              << " , LAPACKE_detev errored."
+                                              << endl;
+                                }
+                                cblas_dcopy(tri_mat_dim, diag, 1,
+                                            eigen_value_even, 1);
                             }
                             else
                             {
@@ -116,9 +146,29 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                                 of_S_L_Outputfile << "u[" << k + 1
                                                   << "] = " << endl;
                                 fprintvec(of_S_L_Outputfile, mat_dim, 5, u[1]);
+                                // calculate eigenvalue
+                                vec_init(tri_mat_dim, diag);
+                                vec_init(tri_mat_dim, sub_diag);
+                                cblas_dcopy(tri_mat_dim, alpha, 1, diag, 1);
+                                cblas_dcopy(tri_mat_dim, beta, 1, sub_diag, 1);
+                                int info = LAPACKE_dstev(
+                                    LAPACK_COL_MAJOR, 'V', k + 2, diag,
+                                    sub_diag, tri_diag_eigen_vec, k + 2);
+                                if (info != 0)
+                                {
+                                    std::cout << "At k = " << k
+                                              << " , LAPACKE_detev errored."
+                                              << endl;
+                                }
+                                cblas_dcopy(tri_mat_dim, diag, 1,
+                                            eigen_value_even, 1);
                             }
                         }
                     }
+                    /***************************EVEN STEP
+                     * END**********************************/
+                    /***************************ODD STEP
+                     * STRT*********************************/
                     else
                     {
                         if (k == mat_dim - 1)
@@ -127,6 +177,16 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                             CSC_sparse_dgemv(mat_dim, nnz, u[0], row, col_ptr,
                                              mat_val, u[1]);
                             alpha[k] = cblas_ddot(mat_dim, u[0], 1, u[1], 1);
+
+                            // calculate eigenvalue
+                            vec_init(tri_mat_dim, diag);
+                            vec_init(tri_mat_dim, sub_diag);
+                            cblas_dcopy(tri_mat_dim, alpha, 1, diag, 1);
+                            cblas_dcopy(tri_mat_dim, beta, 1, sub_diag, 1);
+                            LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', mat_dim, diag,
+                                          sub_diag, tri_diag_eigen_vec,
+                                          mat_dim);
+                            cblas_dcopy(mat_dim, diag, 1, eigen_value_odd, 1);
                         }
                         else
                         {
@@ -140,48 +200,12 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                             of_S_L_Outputfile << "u[" << k + 1
                                               << "] = " << endl;
                             fprintvec(of_S_L_Outputfile, mat_dim, 5, u[0]);
-                        }
-                    }
-                    // calculate eigenvalue of A(k)
-                    vec_init(tri_mat_dim, diag);
-                    vec_init(tri_mat_dim, sub_diag);
-                    cblas_dcopy(tri_mat_dim, alpha, 1, diag, 1);
-                    cblas_dcopy(tri_mat_dim, beta, 1, sub_diag, 1);
-                    if (k % 2 == 0)  // even step
-                    {
-                        if (k == mat_dim - 1)
-                        {
-                            LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', mat_dim, diag,
-                                          sub_diag, tri_diag_eigen_vec,
-                                          mat_dim);
-                            cblas_dcopy(mat_dim, diag, 1, eigen_value_even, 1);
-                        }
-                        else
-                        {
-                            int info = LAPACKE_dstev(LAPACK_COL_MAJOR, 'V',
-                                                     k + 2, diag, sub_diag,
-                                                     tri_diag_eigen_vec, k + 2);
-                            if (info != 0)
-                            {
-                                std::cout << "At k = " << k
-                                          << " , LAPACKE_detev errored."
-                                          << endl;
-                            }
-                            cblas_dcopy(tri_mat_dim, diag, 1, eigen_value_even,
-                                        1);
-                        }
-                    }
-                    else  // odd step
-                    {
-                        if (k == mat_dim - 1)
-                        {
-                            LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', mat_dim, diag,
-                                          sub_diag, tri_diag_eigen_vec,
-                                          mat_dim);
-                            cblas_dcopy(mat_dim, diag, 1, eigen_value_odd, 1);
-                        }
-                        else
-                        {
+
+                            // calculate eigenvalue
+                            vec_init(tri_mat_dim, diag);
+                            vec_init(tri_mat_dim, sub_diag);
+                            cblas_dcopy(tri_mat_dim, alpha, 1, diag, 1);
+                            cblas_dcopy(tri_mat_dim, beta, 1, sub_diag, 1);
                             int info = LAPACKE_dstev(LAPACK_COL_MAJOR, 'V',
                                                      k + 2, diag, sub_diag,
                                                      tri_diag_eigen_vec, k + 2);
@@ -195,6 +219,7 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                                         1);
                         }
                     }
+
                     if (k > 0)
                     {
                         eps = abs(eigen_value_even[0] - eigen_value_odd[0]);
@@ -241,7 +266,7 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                         cblas_dscal(mat_dim, -beta[k - 1], u[1], 1);
                         CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                          mat_val, u[0]);
-                        alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
+                        // alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
                     }
                     else
                     {
@@ -249,8 +274,8 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                         {
                             vec_init(mat_dim, u[1]);
                             vec_init(mat_dim, u[0]);
-                            vec_init(tri_mat_dim, alpha);
-                            vec_init(tri_mat_dim, beta);
+                            // vec_init(tri_mat_dim, alpha);
+                            // vec_init(tri_mat_dim, beta);
                             cblas_dcopy(mat_dim, eigen_vec, 1, u[0], 1);
                             cblas_dscal(mat_dim, tri_diag_eigen_vec[k],
                                         eigen_vec, 1);
@@ -261,9 +286,9 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                             fprintvec(of_S_L_Outputfile, mat_dim, 5, u[0]);
                             CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                              mat_val, u[0]);
-                            alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
+                            // alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
                             cblas_daxpy(mat_dim, -alpha[k], u[0], 1, u[1], 1);
-                            beta[k] = cblas_dnrm2(mat_dim, u[1], 1);
+                            // beta[k] = cblas_dnrm2(mat_dim, u[1], 1);
                             cblas_dscal(mat_dim, 1. / beta[k], u[1], 1);
                             of_S_L_Outputfile << "u[1] = " << endl;
                             fprintvec(of_S_L_Outputfile, mat_dim, 5, u[1]);
@@ -279,9 +304,9 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                             cblas_dscal(mat_dim, -beta[k - 1], u[1], 1);
                             CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                              mat_val, u[0]);
-                            alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
+                            // alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
                             cblas_daxpy(mat_dim, -alpha[k], u[0], 1, u[1], 1);
-                            beta[k] = cblas_dnrm2(mat_dim, u[1], 1);
+                            // beta[k] = cblas_dnrm2(mat_dim, u[1], 1);
                             cblas_dscal(mat_dim, 1. / beta[k], u[1], 1);
                             of_S_L_Outputfile << "u[" << k + 1
                                               << "] = " << endl;
@@ -302,7 +327,7 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                         cblas_dscal(mat_dim, -beta[k - 1], u[0], 1);
                         CSC_sparse_dgemv(mat_dim, nnz, u[0], row, col_ptr,
                                          mat_val, u[1]);
-                        alpha[k] = cblas_ddot(mat_dim, u[0], 1, u[1], 1);
+                        // alpha[k] = cblas_ddot(mat_dim, u[0], 1, u[1], 1);
                     }
                     else
                     {  // Calculate Eigen Vector
@@ -314,9 +339,9 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                         cblas_dscal(mat_dim, -beta[k - 1], u[0], 1);
                         CSC_sparse_dgemv(mat_dim, nnz, u[0], row, col_ptr,
                                          mat_val, u[1]);
-                        alpha[k] = cblas_ddot(mat_dim, u[0], 1, u[1], 1);
+                        // alpha[k] = cblas_ddot(mat_dim, u[0], 1, u[1], 1);
                         cblas_daxpy(mat_dim, -alpha[k], u[1], 1, u[0], 1);
-                        beta[k] = cblas_dnrm2(mat_dim, u[0], 1);
+                        // beta[k] = cblas_dnrm2(mat_dim, u[0], 1);
                         cblas_dscal(mat_dim, 1. / beta[k], u[0], 1);
                         of_S_L_Outputfile << "u[" << k + 1 << "] = " << endl;
                         fprintvec(of_S_L_Outputfile, mat_dim, 5, u[0]);
