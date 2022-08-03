@@ -266,7 +266,6 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                         cblas_dscal(mat_dim, -beta[k - 1], u[1], 1);
                         CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                          mat_val, u[0]);
-                        // alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
                     }
                     else
                     {
@@ -274,43 +273,26 @@ void CSC_sparse_lanczos(const int mat_dim, int nnz, int tri_mat_dim, int *row,
                         {
                             vec_init(mat_dim, u[1]);
                             vec_init(mat_dim, u[0]);
-                            // vec_init(tri_mat_dim, alpha);
-                            // vec_init(tri_mat_dim, beta);
                             cblas_dcopy(mat_dim, eigen_vec, 1, u[0], 1);
                             cblas_dscal(mat_dim, tri_diag_eigen_vec[k],
                                         eigen_vec, 1);
-                            of_S_L_Outputfile << "x[0] = " << endl;
-                            fprintvec(of_S_L_Outputfile, mat_dim, 5, eigen_vec);
-                            // Caluculate alpha,beta,u[i+1]
-                            of_S_L_Outputfile << "u[0] = " << endl;
-                            fprintvec(of_S_L_Outputfile, mat_dim, 5, u[0]);
+                            // Calculate u[i+1]
                             CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                              mat_val, u[0]);
-                            // alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
                             cblas_daxpy(mat_dim, -alpha[k], u[0], 1, u[1], 1);
-                            // beta[k] = cblas_dnrm2(mat_dim, u[1], 1);
                             cblas_dscal(mat_dim, 1. / beta[k], u[1], 1);
-                            of_S_L_Outputfile << "u[1] = " << endl;
-                            fprintvec(of_S_L_Outputfile, mat_dim, 5, u[1]);
                         }
                         else
                         {
                             // Calculate Eigen Vector
                             cblas_daxpy(mat_dim, tri_diag_eigen_vec[k], u[0], 1,
                                         eigen_vec, 1);
-                            of_S_L_Outputfile << "x(at" << k << ") = " << endl;
-                            fprintvec(of_S_L_Outputfile, mat_dim, 5, eigen_vec);
-                            // Caluculate alpha,beta,u[i+1]
+                            // Caluculate u[i+1]
                             cblas_dscal(mat_dim, -beta[k - 1], u[1], 1);
                             CSC_sparse_dgemv(mat_dim, nnz, u[1], row, col_ptr,
                                              mat_val, u[0]);
-                            // alpha[k] = cblas_ddot(mat_dim, u[1], 1, u[0], 1);
                             cblas_daxpy(mat_dim, -alpha[k], u[0], 1, u[1], 1);
-                            // beta[k] = cblas_dnrm2(mat_dim, u[1], 1);
                             cblas_dscal(mat_dim, 1. / beta[k], u[1], 1);
-                            of_S_L_Outputfile << "u[" << k + 1
-                                              << "] = " << endl;
-                            fprintvec(of_S_L_Outputfile, mat_dim, 5, u[1]);
                         }
                     }
                 }
