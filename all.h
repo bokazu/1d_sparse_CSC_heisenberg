@@ -19,10 +19,6 @@ void get_data(std::ifstream &if_M_H_Settingfile, int &tot_site_num,
               int &tri_mat_dim, std::string &M_H_OutputFile_name,
               std::string &M_H_JsetFile_name, std::string &D_L_OutputFile_name,
               std::string &Boundary_Condition, int &precision);
-/*for the purpose to count matrix's non zero elements*/
-void spm(int j, int site_num, int tot_site_num, int &mat_nonzero_elements);
-void smp(int j, int site_num, int tot_site_num, int &mat_nonzero_elements);
-void szz(int j, int site_num, int tot_site_num, int &mat_nonzero_elements);
 /*for the purpose to calculate matrix's non zero elements*/
 void CSC_spin_operator(int j, int site_num, int tot_site_num, double *J,
                        int *row, double *mat_val, int &row_index,
